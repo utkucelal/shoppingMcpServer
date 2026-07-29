@@ -4,36 +4,3 @@ __pycache__/
 chromedriver/
 *.pyc
 .env
-
-
-
-docker run cloudflare/cloudflared:latest tunnel --no-autoupdate run --token eyJhIjoiMmRkOWM1NjM3MTZhNTJjYWE0YzZiMTM3NTFmZWMxZmEiLCJ0IjoiYmM4MzE4NjItMTU3YS00YjkxLWJkZWMtMTIxZWMyYmI1NjY3IiwicyI6Ik5HUTJOVEUwWXprdE5XVTJNQzAwWmpZekxUZzJPV010WVRFM01XSmxZbVF3WmpWbCJ9
-
-
-
----
-services:
-  homeassistant:
-    image: lscr.io/linuxserver/homeassistant:latest
-    container_name: homeassistant
-    network_mode: host
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Istanbul
-    volumes:
-      - ./homeassistant/data:/config
-    ports:
-      - 8123:8123
-    restart: unless-stopped
-
-
-curl -L -X POST 'http://192.168.1.116:8191/v1' \
--H 'Content-Type: application/json' \
---data-raw '{"cmd": "sessions.list"}'
-
-
-
-
-      "username": "k1ng06ps",
-      "npsso": "ng464jw9cpsMWdjftw3OdhgzDvlXAzWJS5rEG4yE6VBJL2NYlx54UGXaqVFQPrTd"
