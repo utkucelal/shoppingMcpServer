@@ -1,5 +1,6 @@
 import hashlib
 import random
+from urllib.parse import quote_plus
 
 from selenium.common import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
@@ -8,16 +9,19 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support.ui import Select
 
 from browser.manager import browserMgr
-from data.dbManager import fetch_orders,insert_orders
+from data.orderDbManager import fetch_orders,insert_orders
 from data.confirmationDbManager import save_pending_confirmation, confirm_order, complete_order
 
 
 def search(browser:browserMgr,query,itemcount=5):
-    global price
     bot = browser
-    browser.navigate("https://www.amazon.com.tr/s?k=" + query)
+    browser.navigate("https://www.amazon.com.tr/s?k=" + quote_plus(query))
 
-    allProducts = bot.driver.find_elements(By.CSS_SELECTOR, "[data-component-type='s-search-result']")
+    allProducts = WebDriverWait(bot.driver, bot.timeout).until(
+        EC.presence_of_all_elements_located(
+            (By.CSS_SELECTOR, "[data-component-type='s-search-result']")
+        )
+    )
 
     products = []
 
@@ -59,7 +63,6 @@ def search(browser:browserMgr,query,itemcount=5):
 
     products = products[:itemcount]
 
-    bot.quit()
     return products
 
 def check_cart(browser:browserMgr):
@@ -225,7 +228,7 @@ def fetchOrders(browser:browserMgr):
 
     return orders
 
-def orderDetails(browser:browserMgr, orderID, ):
+def orderDetails(browser:browserMgr, orderID):
 
     browser.navigate("https://www.amazon.com.tr/gp/your-account/order-details?orderID=" + orderID)
     wait = browser.wait
@@ -382,14 +385,12 @@ def checkout_summary(browser:browserMgr):
     return summary
 
 def purchase(browser:browserMgr, code:str, pin:str):
-    # Verify PIN against database
     is_valid, message = confirm_order(code, pin)
     
     if not is_valid:
         print(f"Purchase failed: {message}")
         return {"success": False, "error": message}
-    
-    # PIN is valid, proceed with purchase
+
     try:
         btn = WebDriverWait(browser.driver, 10).until(
             EC.element_to_be_clickable((By.ID, "submitOrderButtonId"))
@@ -449,7 +450,6 @@ def _generate_confirmation_code(summary: dict):
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 def _generate_pin():
-    """Generate a random 4-digit PIN."""
     return str(random.randint(1000, 9999))
 
 def _safe_text(driver, by, value, default="not found"):

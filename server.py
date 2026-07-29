@@ -11,7 +11,6 @@ from starlette.types import Receive, Scope, Send
 
 import api
 from mcp_tools import app
-from data.confirmationDbManager import init_confirmation_db
 
 
 session_manager = StreamableHTTPSessionManager(app=app)
@@ -23,8 +22,6 @@ async def handle_mcp(scope: Scope, receive: Receive, send: Send) -> None:
 
 @contextlib.asynccontextmanager
 async def lifespan(_: Starlette) -> AsyncIterator[None]:
-    # Initialize confirmation database on startup
-    init_confirmation_db()
     async with session_manager.run():
         yield
 

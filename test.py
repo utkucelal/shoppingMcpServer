@@ -1,11 +1,11 @@
 import asyncio
 
-from starlette.responses import JSONResponse
-
 from mcp_tools import call_tool
 
+
 async def test():
-    await call_tool("Checkout", args={"site": "Amazon"})
+    result = await call_tool("search_products", args={"site": "amazon","query":"notebook bilgisayar","max_results": 10})
+    print(result)
 
 
 asyncio.run(test())

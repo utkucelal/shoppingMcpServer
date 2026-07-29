@@ -1,1 +1,11 @@
-["Amazon"]
+{
+  "amazon": {
+    "name": "Amazon Türkiye",
+    "base_url": "https://www.amazon.com.tr"
+  },
+
+  "trendyol": {
+    "name": "Trendyol",
+    "base_url": "https://www.trendyol.com/"
+  }
+}

@@ -131,24 +131,31 @@ async def list_tools():
 async def call_tool(name:str, args:dict) -> list[types.TextContent]:
 
     if name == "available_sites":
-        return [types.TextContent(type="text", text=json.dumps(sites.get_available_sites()))]
+        return [types.TextContent(type="text", text=json.dumps(sites.available_sites()))]
 
     if name == "search_products":
-        browser = browserMgr(url=f"https://www.amazon.com.tr", uselogin=False)
-        browser.connect()
-        result = search.search(browser, args["query"], args.get("max_results", 5,),site=args["site"])
-        browser.quit()
+        browser = browserMgr(url=sites.get_base_url(args["site"]), uselogin=False)
+        try:
+            browser.connect()
+            result = search.search(
+                browser,
+                args["query"],
+                args.get("max_results", 5),
+                site=args["site"],
+            )
+        finally:
+            browser.quit()
         return [types.TextContent(type="text", text=json.dumps(result))]
 
     if name == "Add_Item":
-        browser = browserMgr(url=f"https://www.amazon.com.tr", uselogin=True)
+        browser = browserMgr(url=sites.get_base_url(args["site"]), uselogin=True)
         browser.connect()
         result = addItem.addItem(browser,args.get("ProductID"),args.get("quantity"),args.get("site","Amazon"))
         browser.quit()
         return [types.TextContent(type="text", text=json.dumps(result))]
 
     if name == "Check_Cart":
-        browser = browserMgr(url=f"https://www.amazon.com.tr", uselogin=True)
+        browser = browserMgr(url=sites.get_base_url(args["site"]), uselogin=True)
         browser.connect()
         result = cart.check_cart(browser,site=args.get("site", "Amazon"))
         browser.quit()
@@ -159,35 +166,35 @@ async def call_tool(name:str, args:dict) -> list[types.TextContent]:
             result = fetchOrder.orders(refresh=args.get("refresh"),site=args.get("site", "Amazon"))
             return [types.TextContent(type="text", text=json.dumps(result))]
 
-        browser = browserMgr(url=f"https://www.amazon.com.tr", uselogin=True)
+        browser = browserMgr(url=sites.get_base_url(args["site"]), uselogin=True)
         browser.connect()
         result = fetchOrder.orders(refresh=args.get("refresh", False), browser=browser, site=args.get("site", "Amazon"))
         browser.quit()
         return [types.TextContent(type="text", text=json.dumps(result))]
 
     if name == "Order_Details":
-        browser = browserMgr(url=f"https://www.amazon.com.tr", uselogin=True)
+        browser = browserMgr(url=sites.get_base_url(args["site"]), uselogin=True)
         browser.connect()
         result = orderDetails.check(browser,orderID=args.get("OrderID"),site=args.get("site", "Amazon"))
         browser.quit()
         return [types.TextContent(type="text", text=json.dumps(result))]
 
     if name == "Track_Order":
-        browser = browserMgr(url=f"https://www.amazon.com.tr", uselogin=True)
+        browser = browserMgr(url=sites.get_base_url(args["site"]), uselogin=True)
         browser.connect()
         result = trackOrder.track(browser,orderID=args.get("OrderID"),site=args.get("site", "Amazon"))
         browser.quit()
         return [types.TextContent(type="text", text=json.dumps(result))]
 
     if name == "Checkout":
-        browser = browserMgr(url=f"https://www.amazon.com.tr", uselogin=True)
+        browser = browserMgr(url=sites.get_base_url(args["site"]), uselogin=True)
         browser.connect()
         result = checkout.checkout(browser,site=args.get("site", "Amazon"))
         browser.quit()
         return [types.TextContent(type="text", text=json.dumps(result))]
 
     if name == "confirm_purchase":
-        browser = browserMgr(url=f"https://www.amazon.com.tr", uselogin=True)
+        browser = browserMgr(url=sites.get_base_url(args["site"]), uselogin=True)
         browser.connect()
         result = confirm.purchase(browser, code=args.get("code"), pin=args.get("pin"), site=args.get("site", "Amazon"))
         browser.quit()

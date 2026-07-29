@@ -17,10 +17,11 @@ async def get_sites(request: Request) -> JSONResponse:
 
 def _run_search(query: str, max_results: int, site: str):
     browser = browserMgr(url="https://www.amazon.com.tr", uselogin=False)
-    browser.connect()
-    result = search.search(browser, query, max_results, site=site)
-    browser.quit()
-    return result
+    try:
+        browser.connect()
+        return search.search(browser, query, max_results, site=site)
+    finally:
+        browser.quit()
 
 
 async def search_products(request: Request) -> JSONResponse:
