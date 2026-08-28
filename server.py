@@ -2,27 +2,30 @@ import contextlib
 from collections.abc import AsyncIterator
 
 import uvicorn
-from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.routing import Mount
-from starlette.types import Receive, Scope, Send
 
 import api
-from mcp_tools import app
+from mcp_tools import app as mcp
 
+from mcp.server.transport_security import TransportSecuritySettings
 
-session_manager = StreamableHTTPSessionManager(app=app)
-
-
-async def handle_mcp(scope: Scope, receive: Receive, send: Send) -> None:
-    await session_manager.handle_request(scope, receive, send)
+mcp_http_app = mcp.streamable_http_app(
+    streamable_http_path="/",
+    json_response=True,
+    transport_security=TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=["ALLOWED_HOSTS"],
+        allowed_origins=[],
+    ),
+)
 
 
 @contextlib.asynccontextmanager
 async def lifespan(_: Starlette) -> AsyncIterator[None]:
-    async with session_manager.run():
+    async with mcp.session_manager.run():
         yield
 
 
@@ -35,15 +38,20 @@ middleware = [
     )
 ]
 
+
 starlette_app = Starlette(
     routes=[
-        Mount("/mcp", app=handle_mcp),
         *api.routes,
+        Mount("/mcp", app=mcp_http_app),
     ],
     middleware=middleware,
     lifespan=lifespan,
 )
 
+
 if __name__ == "__main__":
-    uvicorn.run(starlette_app, host="0.0.0.0"
-                                    "", port=8000)
+    uvicorn.run(
+        starlette_app,
+        host="0.0.0.0",
+        port=8000,
+    )
